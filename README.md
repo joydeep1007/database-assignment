@@ -8,7 +8,6 @@ A minimal event platform where users can discover events and RSVP with Yes/No/Ma
 - ✅ RSVP to events (Yes/No/Maybe)
 - 👤 User authentication
 - 📊 Real-time RSVP counts
-- 🔒 Row Level Security (RLS)
 
 ## Tech Stack
 
@@ -78,15 +77,6 @@ Visit `http://localhost:3000` to see the app.
 2. Connect your GitHub repo to Vercel
 3. Add environment variables in Vercel dashboard
 4. Deploy!
-
-## RLS Policies
-
-The app uses Supabase Row Level Security for data protection:
-
-- Users can view all events (public)
-- Users can only modify their own profile and RSVPs
-- Event creators can see RSVPs for their events
-- Prevents RSVPs to past events
 
 ## Sample Data
 

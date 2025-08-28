@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
+import { useUser } from '../../components/UserProvider'
 
 export default function AuthPage() {
     const [email, setEmail] = useState('')
@@ -11,17 +12,15 @@ export default function AuthPage() {
     const [name, setName] = useState('')
     const [isSignUp, setIsSignUp] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [user, setUser] = useState<any>(null)
+    const { user } = useUser()
     const router = useRouter()
 
+    // Redirect if already logged in
     useEffect(() => {
-        checkUser()
-    }, [])
-
-    async function checkUser() {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-    }
+        if (user) {
+            router.push('/events')
+        }
+    }, [user, router])
 
     async function handleAuth(e: React.FormEvent) {
         e.preventDefault()
@@ -39,13 +38,14 @@ export default function AuthPage() {
 
                 if (data.user) {
                     // Insert user profile
+                    const userId = data.user.id
                     const { error: profileError } = await supabase
                         .from('users')
-                        .insert({
-                            id: data.user.id,
+                        .insert([{
+                            id: userId,
                             name,
                             email,
-                        })
+                        }])
 
                     if (profileError) throw profileError
 
@@ -69,49 +69,13 @@ export default function AuthPage() {
         }
     }
 
-    async function handleSignOut() {
-        await supabase.auth.signOut()
-        setUser(null)
-        router.push('/')
-    }
-
+    // Don't show the form if user is logged in (will redirect)
     if (user) {
         return (
-            <div className="min-h-screen bg-gray-50 py-12">
-                <div className="max-w-md mx-auto px-4">
-                    <div className="bg-white rounded-lg shadow-md p-8">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                            Welcome back!
-                        </h1>
-
-                        <div className="text-center mb-6">
-                            <p className="text-gray-600">Signed in as:</p>
-                            <p className="font-medium text-gray-900">{user.email}</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <Link
-                                href="/events"
-                                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors block text-center"
-                            >
-                                Browse Events
-                            </Link>
-
-                            <button
-                                onClick={handleSignOut}
-                                className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                                Sign Out
-                            </button>
-
-                            <Link
-                                href="/"
-                                className="w-full text-center text-blue-600 hover:text-blue-800 block"
-                            >
-                                ← Back to Home
-                            </Link>
-                        </div>
-                    </div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-gray-600">Redirecting to events...</p>
                 </div>
             </div>
         )
@@ -148,7 +112,7 @@ export default function AuthPage() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required={isSignUp}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg placeholder:text-gray-400"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg text-gray-900 placeholder:text-gray-400"
                                     placeholder="Enter your full name"
                                 />
                             </div>
@@ -164,7 +128,7 @@ export default function AuthPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg placeholder:text-gray-400"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg text-gray-900 placeholder:text-gray-400"
                                 placeholder="Enter your email"
                             />
                         </div>
@@ -179,7 +143,7 @@ export default function AuthPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg placeholder:text-gray-400"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg text-gray-900 placeholder:text-gray-400"
                                 placeholder="Enter your password"
                                 minLength={6}
                             />

@@ -4,28 +4,23 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, Event, RSVP } from '../../../../../lib/supabase'
+import { useUser } from '../../../../components/UserProvider'
 
 export default function RSVPPage() {
     const params = useParams()
     const router = useRouter()
     const eventId = params.id as string
+    const { user } = useUser()
 
     const [event, setEvent] = useState<Event | null>(null)
     const [rsvps, setRsvps] = useState<RSVP[]>([])
     const [userRsvp, setUserRsvp] = useState<RSVP | null>(null)
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
-    const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
-        checkUser()
         fetchEventAndRsvps()
-    }, [eventId])
-
-    async function checkUser() {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-    }
+    }, [eventId, user])
 
     async function fetchEventAndRsvps() {
         try {

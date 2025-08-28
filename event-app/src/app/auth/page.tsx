@@ -34,7 +34,7 @@ export default function AuthPage() {
                     ? 'https://database-assignment-eight.vercel.app/auth/callback'
                     : `${window.location.origin}/auth/callback`
 
-                console.log('Redirect URL:', redirectUrl) // Debug log
+                console.log('Environment:', { isProduction, hostname: window.location.hostname, redirectUrl })
 
                 // Sign up
                 const { data, error } = await supabase.auth.signUp({
@@ -45,9 +45,16 @@ export default function AuthPage() {
                     }
                 })
 
-                if (error) throw error
+                console.log('Signup response:', { data, error }) // Debug log
+
+                if (error) {
+                    console.error('Signup error:', error)
+                    throw error
+                }
 
                 if (data.user) {
+                    console.log('User created:', data.user)
+                    
                     // Insert user profile
                     const userId = data.user.id
                     const { error: profileError } = await supabase
@@ -58,9 +65,14 @@ export default function AuthPage() {
                             email,
                         }])
 
-                    if (profileError) throw profileError
+                    if (profileError) {
+                        console.error('Profile creation error:', profileError)
+                        throw profileError
+                    }
 
                     alert('Check your email for verification link!')
+                } else {
+                    console.warn('No user returned from signup')
                 }
             } else {
                 // Sign in

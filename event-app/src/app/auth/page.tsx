@@ -28,10 +28,18 @@ export default function AuthPage() {
 
         try {
             if (isSignUp) {
+                // Determine the redirect URL based on environment
+                const redirectUrl = process.env.NODE_ENV === 'production' 
+                    ? 'https://database-assignment-eight.vercel.app/auth/callback'
+                    : `${window.location.origin}/auth/callback`
+
                 // Sign up
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        emailRedirectTo: redirectUrl
+                    }
                 })
 
                 if (error) throw error

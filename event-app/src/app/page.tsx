@@ -1,6 +1,45 @@
-import Link from 'next/link'
+'use client'
 
-export default function Home() {
+import Link from 'next/link'
+import { useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabase'
+
+function HomeContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      const code = searchParams.get('code')
+      const error = searchParams.get('error')
+      
+      console.log('Home page params:', { code, error })
+      
+      if (code) {
+        try {
+          // Exchange the code for a session
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          if (exchangeError) {
+            console.error('Code exchange error:', exchangeError)
+            router.push(`/auth/verify?error=exchange_failed&error_description=${encodeURIComponent(exchangeError.message)}`)
+          } else {
+            // Success - redirect to verify page
+            router.push('/auth/verify?success=true')
+          }
+        } catch (err) {
+          console.error('Verification error:', err)
+          router.push('/auth/verify?error=unexpected_error&error_description=An unexpected error occurred')
+        }
+      } else if (error) {
+        router.push(`/auth/verify?error=${error}&error_description=${searchParams.get('error_description') || 'Verification failed'}`)
+      }
+    }
+
+    handleEmailVerification()
+  }, [searchParams, router])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
@@ -35,7 +74,7 @@ export default function Home() {
                 <span className="flex items-center">
                   👤 Sign In
                   <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
                   </svg>
                 </span>
               </Link>
@@ -132,5 +171,20 @@ export default function Home() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }

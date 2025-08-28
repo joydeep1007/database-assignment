@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../../lib/supabase'
 import Link from 'next/link'
 
-export default function VerifyPage() {
+function VerifyContent() {
     const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading')
     const [message, setMessage] = useState('')
     const searchParams = useSearchParams()
@@ -134,5 +134,29 @@ export default function VerifyPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function VerifyPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12">
+                <div className="max-w-md mx-auto px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100 text-center">
+                        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                            Loading...
+                        </h1>
+                        <p className="text-gray-600">
+                            Please wait while we prepare the verification page...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }>
+            <VerifyContent />
+        </Suspense>
     )
 }
